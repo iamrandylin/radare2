@@ -1,6 +1,5 @@
-#if defined (__QNX__)
-#include <unistd.h>
-#if 0
+#include <r_util.h>
+
 /*
  * Copyright (c) 1987, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -57,12 +56,7 @@ char	*optarg;		/* argument associated with option */
  * getopt --
  *	Parse argc/argv argument vector.
  */
-int
-getopt(nargc, nargv, ostr)
-	int nargc;
-	char * const *nargv;
-	const char *ostr;
-{
+R_API int r_getopt(int nargc, char * const *nargv, const char *ostr) {
 	static char *place = EMSG;		/* option letter processing */
 	char *oli;				/* option letter list index */
 
@@ -70,56 +64,55 @@ getopt(nargc, nargv, ostr)
 		optreset = 0;
 		if (optind >= nargc || *(place = nargv[optind]) != '-') {
 			place = EMSG;
-			return (-1);
+			return -1;
 		}
 		if (place[1] && *++place == '-') {	/* found "--" */
 			++optind;
 			place = EMSG;
-			return (-1);
+			return -1;
 		}
 	}					/* option letter okay? */
-	if ((optopt = (int)*place++) == (int)':' ||
-	    !(oli = strchr(ostr, optopt))) {
+	if ((optopt = (int)*place++) == (int)':' || !(oli = strchr(ostr, optopt))) {
 		/*
 		 * if the user didn't specify '-' as an option,
 		 * assume it means -1.
 		 */
-		if (optopt == (int)'-')
-			return (-1);
-		if (!*place)
+		if (optopt == (int)'-') {
+			return -1;
+		}
+		if (!*place) {
 			++optind;
-		if (opterr && *ostr != ':')
+		}
+		if (opterr && *ostr != ':') {
 			(void)fprintf(stderr,
 			    "%s: illegal option -- %c\n", nargv[0], optopt);
-		return (BADCH);
+		}
+		return BADCH;
 	}
 	if (*++oli != ':') {			/* don't need argument */
 		optarg = NULL;
-		if (!*place)
-			++optind;
-	}
-	else {					/* need an argument */
-		if (*place)			/* no white space */
+		if (!*place) {
+			optind++;
+		}
+	} else {					/* need an argument */
+		if (*place) { /* no white space */
 			optarg = place;
-		else if (nargc <= ++optind) {	/* no arg */
+		} else if (nargc <= ++optind) {	/* no arg */
 			place = EMSG;
-			if (*ostr == ':')
-				return (BADARG);
-			if (opterr)
+			if (*ostr == ':') {
+				return BADARG;
+			}
+			if (opterr) {
 				(void)fprintf(stderr,
 				    "%s: option requires an argument -- %c\n",
 				    nargv[0], optopt);
-			return (BADCH);
-		}
-	 	else				/* white space */
+			}
+			return BADCH;
+		} else { /* white space */
 			optarg = nargv[optind];
+		}
 		place = EMSG;
 		++optind;
 	}
 	return (optopt);			/* dump back option letter */
 }
-
-#endif
-#else
-#include <getopt.h>
-#endif

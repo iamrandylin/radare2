@@ -1184,7 +1184,7 @@ repeat:
 		// Case of valid but unused "add [rax], al"
 		case R_ANAL_OP_TYPE_ADD:
 			if (anal->opt.ijmp) {
-				if (!memcmp (buf + op.size, "\x00\x00\x00\x00", 4)) {
+				if ((op.size + 4 < sizeof (buf)) && !memcmp (buf + op.size, "\x00\x00\x00\x00", 4)) {
 					bb->size -= oplen;
 					op.type = R_ANAL_OP_TYPE_RET;
 					gotoBeach (R_ANAL_RET_END);
@@ -1921,22 +1921,12 @@ R_API bool r_anal_fcn_add_bb(RAnal *anal, RAnalFunction *fcn, ut64 addr, ut64 si
 		bb = r_anal_fcn_bbget_at (fcn, addr);
 		if (!bb) {
 			if (fcn->addr == addr) {
-#if 0
-				// no need to cry in here
-				bb = appendBasicBlock (anal, fcn, addr);
-				if (!bb) {
-					eprintf ("appendBasicBlock failed\n");
-					return false;
-				}
-				bb->size = size;
-#endif
 				return true;
 			}
 			eprintf ("r_anal_fcn_add_bb failed in fcn 0x%08"PFMT64x" at 0x%08"PFMT64x"\n",
 				fcn->addr, addr);
 			return false;
 		}
-		// if (bb) { if (!bb->size) { bb->size = size; } }
 	} else {
 		if (!bb) {
 			bb = appendBasicBlock (anal, fcn, addr);

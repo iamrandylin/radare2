@@ -5,6 +5,16 @@
 #include <r_core.h>
 #include <signal.h>
 
+#if __APPLE__ && (__arm__ || __arm64__ || __aarch64__)
+#define USE_IOS_JETSAM 1
+
+#define MEMORYSTATUS_CMD_SET_JETSAM_TASK_LIMIT 6
+extern int memorystatus_control(uint32_t command, pid_t pid, uint32_t flags, void *buffer, size_t buffersize);
+
+#else
+#define USE_IOS_JETSAM 0
+#endif
+
 static int usage (int v) {
 	printf ("Usage: r2agent [-adhs] [-p port]\n"
 	"  -a        listen for everyone (localhost by default)\n"
@@ -34,7 +44,7 @@ R_API int r_main_r2agent(int argc, char **argv) {
 	char *pfile = NULL;
 	memset (&so, 0, sizeof (so));
 
-	while ((c = getopt (argc, argv, "adhup:t:sv")) != -1) {
+	while ((c = r_getopt (argc, argv, "adhup:t:sv")) != -1) {
 		switch (c) {
 		case 'a':
 			listenlocal = false;
@@ -131,7 +141,11 @@ R_API int r_main_r2agent(int argc, char **argv) {
 				// TODO: show page here?
 				int pid = atoi (rs->path + 11);
 				if (pid > 0) {
-					kill (pid, SIGKILL);
+#if __WINDOWS__
+					r_sandbox_kill (pid, 0);
+#else
+					r_sandbox_kill (pid, SIGKILL);
+#endif
 				}
 			} else if (!strncmp (rs->path, "/file/open/", 11)) {
 				int pid;

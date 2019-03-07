@@ -67,12 +67,13 @@ R_API int r_getopt(int nargc, char * const *nargv, const char *ostr) {
 			return -1;
 		}
 		if (place[1] && *++place == '-') {	/* found "--" */
-			++optind;
+			optind++;
 			place = EMSG;
 			return -1;
 		}
-	}					/* option letter okay? */
-	if ((optopt = (int)*place++) == (int)':' || !(oli = strchr(ostr, optopt))) {
+	}
+	/* option letter okay? */
+	if ((optopt = (int)*place++) == (int)':' || !(oli = strchr (ostr, optopt))) {
 		/*
 		 * if the user didn't specify '-' as an option,
 		 * assume it means -1.
@@ -81,11 +82,10 @@ R_API int r_getopt(int nargc, char * const *nargv, const char *ostr) {
 			return -1;
 		}
 		if (!*place) {
-			++optind;
+			optind++;
 		}
 		if (opterr && *ostr != ':') {
-			(void)fprintf(stderr,
-			    "%s: illegal option -- %c\n", nargv[0], optopt);
+			(void)eprintf("%s: illegal option -- %c\n", nargv[0], optopt);
 		}
 		return BADCH;
 	}
@@ -97,22 +97,20 @@ R_API int r_getopt(int nargc, char * const *nargv, const char *ostr) {
 	} else {					/* need an argument */
 		if (*place) { /* no white space */
 			optarg = place;
-		} else if (nargc <= ++optind) {	/* no arg */
+		} else if (nargc <= ++optind) {  /* no arg */
 			place = EMSG;
 			if (*ostr == ':') {
 				return BADARG;
 			}
 			if (opterr) {
-				(void)fprintf(stderr,
-				    "%s: option requires an argument -- %c\n",
-				    nargv[0], optopt);
+				(void)eprintf("%s: option requires an argument -- %c\n", nargv[0], optopt);
 			}
 			return BADCH;
 		} else { /* white space */
 			optarg = nargv[optind];
 		}
 		place = EMSG;
-		++optind;
+		optind++;
 	}
-	return (optopt);			/* dump back option letter */
+	return optopt;			/* dump back option letter */
 }

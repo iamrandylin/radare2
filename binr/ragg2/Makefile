@@ -6,6 +6,7 @@ BINDEPS+=r_bin r_search r_io r_socket
 BINDEPS+=r_magic r_util r_main
 
 include ../rules.mk
+include ../../libr/main/deps.mk
 include ../../shlr/ar/deps.mk
 include ../../libr/socket/deps.mk
 include ../../shlr/bochs/deps.mk
